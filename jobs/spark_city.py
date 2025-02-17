@@ -4,6 +4,7 @@ from pyspark.sql.types import StructType, StructField, StringType, TimestampType
 from pyspark.sql.functions import from_json, col
 from config.config import configuration
 import logging
+from pyspark.conf import SparkConf
 
 
 logging.basicConfig(
@@ -43,17 +44,30 @@ def stream_writer(input, checkpoint_location, output, mode="append"):
 
 
 def main():
+    access_key = configuration.get("AWS_ACCESS_KEY")
+    secret_key = configuration.get("AWS_SECRET_KEY")
     spark = (
         SparkSession.builder.appName("SmartCity")
         .config("spark.jars.packages", "org.apache.spark:spark-sql-kafka-0-10_2.13:3.5.0,org.apache.hadoop:hadoop-aws:3.3.4,com.amazonaws:aws-java-sdk:1.11.469")
         .config("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
-        .config("spark.hadoop.fs.s3a.access.key", configuration.get("AWS_ACCESS_KEY"))
-        .config("spark.hadoop.fs.s3a.secret.key", configuration.get("AWS_SECRET_KEY"))
+        .config("spark.hadoop.fs.s3a.access.key", access_key)
+        .config("spark.hadoop.fs.s3a.secret.key", secret_key)
         .config("spark.hadoop.fs.s3a.aws.credentials.provider", "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider")
         .getOrCreate()
     )
 
-    spark.sparkContext.setLogLevel("WARN")
+    sc = spark.sparkContext
+    # sc._jsc.hadoopConfiguration().set("fs.s3.awsAccessKeyId", access_key)
+    # sc._jsc.hadoopConfiguration().set("fs.s3n.awsAccessKeyId", access_key)
+    # sc._jsc.hadoopConfiguration().set("fs.s3a.access.key", access_key)
+    # sc._jsc.hadoopConfiguration().set("fs.s3.awsSecretAccessKey", secret_key)
+    # sc._jsc.hadoopConfiguration().set("fs.s3n.awsSecretAccessKey", secret_key)
+    # sc._jsc.hadoopConfiguration().set("fs.s3a.secret.key", secret_key)
+    # sc._jsc.hadoopConfiguration().set("fs.s3n.impl", "org.apache.hadoop.fs.s3native.NativeS3FileSystem")
+    # sc._jsc.hadoopConfiguration().set("fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
+    # sc._jsc.hadoopConfiguration().set("fs.s3.impl", "org.apache.hadoop.fs.s3.S3FileSystem")
+
+    sc.setLogLevel("WARN")
 
     vehicle_schema = StructType(
         [
