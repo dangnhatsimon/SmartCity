@@ -6,7 +6,7 @@ import logging
 import random
 import uuid
 import time
-
+from typing import List, Dict, Sequence, Optional, Any
 
 logging.basicConfig(
     format="%(asctime)s - %(levelname)s - %(message)s",
@@ -38,13 +38,13 @@ start_time = datetime.now()
 start_location = HOCHIMINH_COORDINATES.copy()
 
 
-def get_next_timestamp():
+def get_next_timestamp() -> datetime:
     global start_time
     start_time += timedelta(seconds=random.randint(30, 60))
     return start_time
 
 
-def simulate_vehicle_movement():
+def simulate_vehicle_movement() -> Dict[str, Any]:
     global start_location
 
     start_location["lat"] += LAT_INCRE
@@ -56,7 +56,9 @@ def simulate_vehicle_movement():
     return start_location
 
 
-def generate_vehicle_data(device_id):
+def generate_vehicle_data(
+    device_id: str
+) -> Dict[str, Any]:
     location = simulate_vehicle_movement()
     return {
         "id": uuid.uuid4(),
@@ -72,7 +74,11 @@ def generate_vehicle_data(device_id):
     }
 
 
-def generate_gps_data(device_id, timestamp, vehicle_type="private"):
+def generate_gps_data(
+    device_id: str,
+    timestamp: datetime,
+    vehicle_type: str = "private"
+) -> Dict[str, Any]:
     return {
         "id": uuid.uuid4(),
         "device_id": device_id,
@@ -83,7 +89,12 @@ def generate_gps_data(device_id, timestamp, vehicle_type="private"):
     }
 
 
-def generate_traffic_camera_data(device_id, timestamp, location, camera_id):
+def generate_traffic_camera_data(
+    device_id: str,
+    timestamp: datetime,
+    location: Dict[str, Any],
+    camera_id: str
+) -> Dict[str, Any]:
     return {
         "id": uuid.uuid4(),
         "device_id": device_id,
@@ -94,7 +105,11 @@ def generate_traffic_camera_data(device_id, timestamp, location, camera_id):
     }
 
 
-def generate_weather_data(device_id, timestamp, location):
+def generate_weather_data(
+    device_id: str,
+    timestamp: datetime,
+    location: Dict[str, Any]
+) -> Dict[str, Any]:
     return {
         "id": uuid.uuid4(),
         "device_id": device_id,
@@ -109,7 +124,11 @@ def generate_weather_data(device_id, timestamp, location):
     }
 
 
-def generate_emergency_incident_data(device_id, timestamp, location):
+def generate_emergency_incident_data(
+    device_id: str,
+    timestamp: datetime,
+    location: Dict[str, Any]
+) -> Dict[str, Any]:
     return {
         "id": uuid.uuid4(),
         "device_id": device_id,
@@ -122,7 +141,7 @@ def generate_emergency_incident_data(device_id, timestamp, location):
     }
 
 
-def json_serializer(obj):
+def json_serializer(obj: Any) -> str:
     if isinstance(obj, uuid.UUID):
         return str(obj)
     raise TypeError(f"Object of type {obj.__class__.__name__} is not json serializable.")
@@ -135,7 +154,11 @@ def delivery_report(err, msg):
         logging.info(f"Message delivered to {msg.topic()} [{msg.partition()}]")
 
 
-def produce_data_to_kafka(producer, topic, data):
+def produce_data_to_kafka(
+    producer: SerializingProducer,
+    topic: str,
+    data: Dict[str, Any]
+):
     try:
         producer.produce(
             topic,
@@ -148,7 +171,10 @@ def produce_data_to_kafka(producer, topic, data):
     producer.flush()
 
 
-def simulate_journey(producer, device_id):
+def simulate_journey(
+    producer: SerializingProducer,
+    device_id: str
+) -> None:
     while True:
         vehicle_data = generate_vehicle_data(device_id)
         gps_data = generate_gps_data(device_id, vehicle_data["timestamp"])

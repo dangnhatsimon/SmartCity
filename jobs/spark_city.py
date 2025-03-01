@@ -1,5 +1,6 @@
-from pyspark.sql import SparkSession
-from pyspark.sql.types import StringType, StructField
+from pyspark.sql import SparkSession, DataFrame
+from pyspark.sql.streaming import DataStreamReader
+from pyspark.sql.types import StringType, StructField, DataType
 from pyspark.sql.types import StructType, StructField, StringType, TimestampType, DoubleType, IntegerType
 from pyspark.sql.functions import from_json, col
 from config.config import configuration
@@ -17,11 +18,16 @@ KAFKA_BROKER = "broker:29092"
 S3_BUCKET = "s3a://spark-kafka-smart-city"
 
 
-def read_kafka_topic(spark, topic, schema):
+def read_kafka_topic(
+    spark: SparkSession,
+    topic: str,
+    schema: DataType,
+    broker: str
+) -> DataFrame:
     return (
         spark.readStream
         .format("kafka")
-        .option("kafka.bootstrap.servers", KAFKA_BROKER)
+        .option("kafka.bootstrap.servers", broker)
         .option("subscribe", topic)
         .option("startingOffsets", "earliest")
         .load()
@@ -32,7 +38,12 @@ def read_kafka_topic(spark, topic, schema):
     )
 
 
-def stream_writer(input, checkpoint_location, output, mode="append"):
+def stream_writer(
+    input: DataFrame,
+    checkpoint_location: str,
+    output: str,
+    mode: str = "append"
+):
     return (
         input.writeStream
         .format("parquet")
@@ -135,11 +146,11 @@ def main():
         ]
     )
 
-    vehicle_df = read_kafka_topic(spark, "vehicle_data", vehicle_schema).alias("vehicle")
-    gps_df = read_kafka_topic(spark, "gps_data", gps_schema).alias("gps")
-    traffic_df = read_kafka_topic(spark, "traffic_data", traffic_schema).alias("traffic")
-    weather_df = read_kafka_topic(spark, "weather_data", weather_schema).alias("weather")
-    emergency_df = read_kafka_topic(spark, "emergency_data", emergency_schema).alias("emergency")
+    vehicle_df = read_kafka_topic(spark, "vehicle_data", vehicle_schema, KAFKA_BROKER).alias("vehicle")
+    gps_df = read_kafka_topic(spark, "gps_data", gps_schema, KAFKA_BROKER).alias("gps")
+    traffic_df = read_kafka_topic(spark, "traffic_data", traffic_schema, KAFKA_BROKER).alias("traffic")
+    weather_df = read_kafka_topic(spark, "weather_data", weather_schema, KAFKA_BROKER).alias("weather")
+    emergency_df = read_kafka_topic(spark, "emergency_data", emergency_schema, KAFKA_BROKER).alias("emergency")
 
     query_vehicle = stream_writer(
         input=vehicle_df,
