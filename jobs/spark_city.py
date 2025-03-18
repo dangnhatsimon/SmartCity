@@ -64,6 +64,11 @@ def main():
         .config("spark.hadoop.fs.s3a.access.key", access_key)
         .config("spark.hadoop.fs.s3a.secret.key", secret_key)
         .config("spark.hadoop.fs.s3a.aws.credentials.provider", "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider")
+        .config("spark.driver.cores", 2)
+        .config("spark.driver.memory", "2g")
+        .config("spark.executor.memory", "1g")
+        .config("spark.submit.deployMode", "client")
+        .config("spark.log.level", "ALL")
         .getOrCreate()
     )
 
