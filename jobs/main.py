@@ -210,4 +210,4 @@ if __name__ == "__main__":
         logging.error(f"Simulation ended with unexpected error: {e}", exc_info=True)
 
 
-# docker exec -it smartcity-spark-master-1 python jobs/main.py
+# docker exec -it smartcity-spark-master python jobs/main.py
