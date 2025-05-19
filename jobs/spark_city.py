@@ -3,7 +3,7 @@ from pyspark.sql.streaming import DataStreamReader
 from pyspark.sql.types import StringType, StructField, DataType
 from pyspark.sql.types import StructType, StructField, StringType, TimestampType, DoubleType, IntegerType
 from pyspark.sql.functions import from_json, col
-from config.config import configuration
+from conf.config import configuration
 import logging
 from pyspark.conf import SparkConf
 
