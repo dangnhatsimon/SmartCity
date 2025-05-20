@@ -3,7 +3,6 @@ from pyspark.sql.streaming import DataStreamReader
 from pyspark.sql.types import StringType, StructField, DataType
 from pyspark.sql.types import StructType, StructField, StringType, TimestampType, DoubleType, IntegerType
 from pyspark.sql.functions import from_json, col
-from conf.config import configuration
 import logging
 from pyspark.conf import SparkConf
 
@@ -55,20 +54,8 @@ def stream_writer(
 
 
 def main():
-    access_key = configuration.get("AWS_ACCESS_KEY")
-    secret_key = configuration.get("AWS_SECRET_KEY")
     spark = (
         SparkSession.builder.appName("SmartCity")
-        .config("spark.jars.packages", "org.apache.spark:spark-sql-kafka-0-10_2.13:3.5.0,org.apache.hadoop:hadoop-aws:3.3.4,com.amazonaws:aws-java-sdk:1.11.469")
-        .config("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
-        .config("spark.hadoop.fs.s3a.access.key", access_key)
-        .config("spark.hadoop.fs.s3a.secret.key", secret_key)
-        .config("spark.hadoop.fs.s3a.aws.credentials.provider", "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider")
-        .config("spark.driver.cores", 2)
-        .config("spark.driver.memory", "2g")
-        .config("spark.executor.memory", "1g")
-        .config("spark.submit.deployMode", "client")
-        .config("spark.log.level", "ALL")
         .getOrCreate()
     )
 
